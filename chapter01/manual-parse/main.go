@@ -1,4 +1,4 @@
-package manual_parse
+package main
 
 import (
 	"bufio"
@@ -24,8 +24,8 @@ func printUsage(w io.Writer) {
 }
 
 func validateArgs(c config) error {
-	if !(c.numTimes > 0) {
-		return errors.New("numTimes must be greater than 0")
+	if c.numTimes <= 0 && !c.printUsage {
+		return errors.New("Must specify a number greater than 0")
 	}
 	return nil
 }
@@ -33,41 +33,36 @@ func validateArgs(c config) error {
 func parseArgs(args []string) (config, error) {
 	var numTimes int
 	var err error
-
 	c := config{}
-
 	if len(args) != 1 {
-		return c, errors.New("invalid number of arguments")
+		return c, errors.New("Invalid number of arguments")
 	}
 
-	if args[0] == "-h" || args[0] == "--help" {
+	if args[0] == "-h" || args[0] == "-help" {
 		c.printUsage = true
 		return c, nil
 	}
 
 	numTimes, err = strconv.Atoi(args[0])
-
 	if err != nil {
 		return c, err
 	}
 	c.numTimes = numTimes
+
 	return c, nil
 }
 
 func getName(r io.Reader, w io.Writer) (string, error) {
 	msg := "Your name please? Press the Enter key when done.\n"
 	fmt.Fprintf(w, msg)
-
 	scanner := bufio.NewScanner(r)
 	scanner.Scan()
-
 	if err := scanner.Err(); err != nil {
 		return "", err
 	}
-
 	name := scanner.Text()
 	if len(name) == 0 {
-		return "", errors.New("you didn't enter your name")
+		return "", errors.New("You didn't enter your name")
 	}
 	return name, nil
 }
@@ -95,24 +90,21 @@ func runCmd(r io.Reader, w io.Writer, c config) error {
 
 func main() {
 	c, err := parseArgs(os.Args[1:])
-
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		printUsage(os.Stderr)
+		fmt.Fprintln(os.Stdout, err)
+		printUsage(os.Stdout)
 		os.Exit(1)
 	}
-
 	err = validateArgs(c)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		printUsage(os.Stderr)
+		fmt.Fprintln(os.Stdout, err)
+		printUsage(os.Stdout)
 		os.Exit(1)
 	}
 
 	err = runCmd(os.Stdin, os.Stdout, c)
-
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintln(os.Stdout, err)
 		os.Exit(1)
 	}
 }
