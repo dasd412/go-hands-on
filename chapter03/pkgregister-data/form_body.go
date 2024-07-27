@@ -28,7 +28,7 @@ func createMultiPartMessage(data pkgData) ([]byte, string, error) {
 
 	fmt.Fprintf(fw, data.Version)
 
-	fw, err = mw.CreateFormFile("filedata", data.FileName)
+	fw, err = mw.CreateFormFile("filedata", data.Filename)
 
 	if err != nil {
 		return nil, "", err

@@ -10,7 +10,7 @@ import (
 type pkgData struct {
 	Name     string
 	Version  string
-	FileName string
+	Filename string
 	Bytes    io.Reader
 }
 
