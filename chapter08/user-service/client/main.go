@@ -9,30 +9,44 @@ import (
 	"os"
 )
 
+func setupGrpcConn(addr string) (*grpc.ClientConn, error) {
+	return grpc.DialContext(
+		context.Background(),
+		addr,
+		grpc.WithInsecure(),
+		grpc.WithBlock(),
+	)
+}
+
+func getUserServiceClient(conn *grpc.ClientConn) users.UsersClient {
+	return users.NewUsersClient(conn)
+}
+
+func getUser(
+	client users.UsersClient,
+	u *users.UserGetRequest,
+) (*users.UserGetReply, error) {
+	return client.GetUser(context.Background(), u)
+}
+
 func main() {
 	if len(os.Args) != 2 {
 		log.Fatal(
 			"Must specify a gRPC server address",
 		)
 	}
-	addr := os.Args[1]
-
-	conn, err := grpc.DialContext(
-		context.Background(),
-		addr,
-		grpc.WithInsecure(),
-		grpc.WithBlock(),
-	)
-
+	conn, err := setupGrpcConn(os.Args[1])
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	defer conn.Close()
 
-	c := users.NewUsersClient(conn)
+	c := getUserServiceClient(conn)
 
-	result, err := c.GetUser(context.Background(), &users.UserGetRequest{Email: "jane@doe.com"})
+	result, err := getUser(
+		c,
+		&users.UserGetRequest{Email: "jane@doe.com"},
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
