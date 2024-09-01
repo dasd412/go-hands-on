@@ -25,19 +25,24 @@ func (s *userService) GetUser(
 		in.Id,
 	)
 	components := strings.Split(in.Email, "@")
-
 	if len(components) != 2 {
-		return nil, errors.New("invalid email")
+		return nil, errors.New("invalid email address")
 	}
-
 	u := users.User{
 		Id:        in.Id,
 		FirstName: components[0],
 		LastName:  components[1],
 		Age:       36,
 	}
-
 	return &users.UserGetReply{User: &u}, nil
+}
+
+func registerServices(s *grpc.Server) {
+	users.RegisterUsersServer(s, &userService{})
+}
+
+func startServer(s *grpc.Server, l net.Listener) error {
+	return s.Serve(l)
 }
 
 func main() {
@@ -47,13 +52,10 @@ func main() {
 	}
 
 	lis, err := net.Listen("tcp", listenAddr)
-
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	s := grpc.NewServer()
-
-	users.RegisterUsersServer(s, &userService{})
-	log.Fatal(s.Serve(lis))
+	registerServices(s)
+	log.Fatal(startServer(s, lis))
 }
