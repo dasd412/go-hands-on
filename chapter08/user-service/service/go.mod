@@ -1,4 +1,4 @@
-module github.com/dasd412/user-service/service
+module github.com/dasd412/go-hands-on/user-service/service
 
 go 1.22
 
